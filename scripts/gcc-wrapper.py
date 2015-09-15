@@ -41,9 +41,13 @@ import subprocess
 
 allowed_warnings = set([
     "return_address.c:62",
+<<<<<<< HEAD
     "hci_conn.c:407",
     "cpufreq_interactive.c:804",
     "cpufreq_interactive.c:847",
+=======
+    "workqueue.c:480"
+>>>>>>> 47c9e96... ARM: msm: GCC Version change.
     "ene_ub6250.c:2118",
  ])
 
