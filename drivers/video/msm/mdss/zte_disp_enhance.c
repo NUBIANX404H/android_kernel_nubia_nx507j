@@ -8,122 +8,154 @@
 #include <linux/timer.h>
 #include <linux/err.h>
 #include <linux/ctype.h>
-#include "mdss_mdp.h"
+#include "mdss_dsi.h"
 
-#include "zte_disp_enhance.h"
-
-#define ZTE_SHARP_ENHANCE_CMD_COUNT 1
-#define ZTE_DISP_ENHANCE_DEBUG		0
-#define ZTEMT_LCD_CORLORTMP_DEBUG 	0
-
-
-/*mdp adjust colortmp mayu add*/
-#if defined(CONFIG_ZTEMT_MIPI_1080P_R63311_SHARP_IPS_5P0) || \
-	defined(CONFIG_ZTEMT_MIPI_1080P_R63311_SHARP_IPS_5P0_NX507J)
-#include "zte_disp_enhance_NX503A.h"
-#endif
-
-#if defined(CONFIG_ZTEMT_MIPI_1080P_R63311_SHARP_IPS_5P5)
-#include "zte_disp_enhance_NX504J.h"
-#endif
-
-#if defined(CONFIG_ZTEMT_MIPI_1080P_R63417_SHARP_IPS_5P5)
-#include "zte_disp_enhance_NX505J.h"
-#endif
-
-#if defined(CONFIG_ZTEMT_MIPI_2K_R63419_SHARP_IPS_5P5)
-#include "zte_disp_enhance_NX506J.h"
-#endif
-
-#if defined(CONFIG_ZTEMT_MIPI_1080P_R63311_SHARP_IPS_6P4)
-#include "zte_disp_enhance_NX601J.h"
-#endif
-
-#if ZTEMT_LCD_CORLORTMP_DEBUG
-
-struct mdp_pcc_cfg_data zte_pcc_cfg_debug = {
-	.block = 0x10,
-	.ops = 0x5,
-	{
-	  .c = 0,
-	  .r = 0x8000,
-	  .g = 0,
-	  .b = 0,
-	  .rr = 0,
-	  .gg = 0,
-	  .bb = 0,
-	  .rg = 0,
-	  .gb = 0,
-	  .rb = 0,
-	  .rgb_0 = 0,
-	  .rgb_1 = 0
-	},
-	{
-	  .c = 0,
-	  .r = 0,
-	  .g = 0x8000,
-	  .b = 0,
-	  .rr = 0,
-	  .gg = 0,
-	  .bb = 0,
-	  .rg = 0,
-	  .gb = 0,
-	  .rb = 0,
-	  .rgb_0 = 0,
-	  .rgb_1 = 0
-	},
-	{
-	  .c = 0,
-	  .r = 0,
-	  .g = 0,
-	  .b = 0x8000,
-	  .rr = 0,
-	  .gg = 0,
-	  .bb = 0,
-	  .rg = 0,
-	  .gb = 0,
-	  .rb = 0,
-	  .rgb_0 = 0,
-	  .rgb_1 = 0
-	},
+enum {
+	INTENSITY_NORMAL=24,
+	INTENSITY_01,
+	INTENSITY_02
 };
 
+#define ZTE_DISP_ENHANCE_DEBUG
+
+unsigned int zte_intensity_value;
+struct mdss_dsi_ctrl_pdata *zte_mdss_dsi_ctrl = NULL;
+void zte_send_cmd(struct dsi_cmd_desc *cmds, int len);
+
+#if defined(CONFIG_ZTEMT_NE501_LCD)
+#if defined(CONFIG_ZTEMT_MIPI_720P_NT35592_SHARP_IPS_5P)
+static char nt35592_55B0[] = {0x55, 0xb0};
+static char nt35592_5580[] = {0x55, 0x80};
+static char nt35592_55[] = {0x55, 0x00};
+
+static char nt35592_FF03[] = {0xFF, 0x03};
+static char nt35592_1A[] = {0x1A, 0x77};
+static char nt35592_56[] = {0x56, 0x00};
+static char nt35592_68[] = {0x68, 0x00};
+static char nt35592_FB[] = {0xFB, 0x01};
+static char nt35592_FF00[] = {0xFF, 0x00};
+static struct dsi_cmd_desc sharp_nt35592_720p_enhance2[] = {
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_FF03)}, nt35592_FF03},
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_1A)}, nt35592_1A}, 
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_56)}, nt35592_56},
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_68)}, nt35592_68},
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_FB)}, nt35592_FB}, 
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_FF00)}, nt35592_FF00},
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_55B0)}, nt35592_55B0}, 	
+
+};
+static struct dsi_cmd_desc sharp_nt35592_720p_default[] = {
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_55)}, nt35592_55}, 	
+
+};
+static struct dsi_cmd_desc sharp_nt35592_720p_enhance1[] = {
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_FF03)}, nt35592_FF03},
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_1A)}, nt35592_1A}, 
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_56)}, nt35592_56},
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_68)}, nt35592_68},
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_FB)}, nt35592_FB}, 
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_FF00)}, nt35592_FF00},
+	{{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(nt35592_5580)}, nt35592_5580},	
+};
 #endif
 
-
-static struct zte_enhance_type zte_enhance_val = {
-	.en_saturation =1,
-	.saturation = INTENSITY_01,
-	.colortmp =  INTENSITY_00,
-#if defined (CONFIG_ZTEMT_MIPI_1080P_R63417_SHARP_IPS_5P5) || \
-	defined (CONFIG_ZTEMT_MIPI_2K_R63419_SHARP_IPS_5P5) || \
-	defined (CONFIG_ZTEMT_MIPI_1080P_R63311_SHARP_IPS_5P0_NX507J) || \
-	defined (CONFIG_ZTEMT_MIPI_1080P_R63311_SHARP_IPS_6P4)
-	.en_colortmp = 1,
-#else
-	.en_colortmp = 0,
-#endif
+static char hx8392b_ce_off[] = {0xE4, 0x00, 0x00};//
+static struct dsi_cmd_desc sharp_hx8392b_720p_default[] = {
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(hx8392b_ce_off)}, hx8392b_ce_off},
 };
 
-static struct mdss_dsi_ctrl_pdata *zte_mdss_dsi_ctrl = NULL;
+static char hx8392b_ce_low[] = {0xE4, 0x55, 0x01};//
+static struct dsi_cmd_desc sharp_hx8392b_720p_enhance0[] = {
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(hx8392b_ce_low)}, hx8392b_ce_low},
+};
+/*
+static char hx8392b_ce_medium[] = {0xE4, 0xAA, 0x01};//
+static struct dsi_cmd_desc sharp_hx8392b_720p_enhance1[] = {
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(hx8392b_ce_medium)}, hx8392b_ce_medium},
+};*/
 
-struct zte_enhance_type zte_get_lcd_enhance_param(void)
+static char hx8392b_ce_high[] = {0xE4, 0xff, 0x01};//
+static struct dsi_cmd_desc sharp_hx8392b_720p_enhance2[] = {
+	{{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(hx8392b_ce_high)}, hx8392b_ce_high},
+};
+
+void zte_NE501J_disp_inc(unsigned int state)
 {
-	return zte_enhance_val;
-}
-
-void zte_send_cmd(struct dsi_cmd_desc *cmds,int cmdcount)
-{
-	struct dcs_cmd_req cmdreq;
-
-	if((!zte_mdss_dsi_ctrl) || (cmdcount < 1))	{
+	unsigned int value;
+	value =state;
+#ifdef ZTE_DISP_ENHANCE_DEBUG
+	printk("lcd:%s value=%d\n", __func__, value);
+#endif
+#if defined(CONFIG_ZTEMT_MIPI_720P_NT35592_SHARP_IPS_5P)
+	if(!zte_mdss_dsi_ctrl)
+	{
 		pr_err("lcd:faild:%s zte_mdss_dsi_ctrl is null\n",__func__);
 		return;
 	}
+	// lianchuang LCM's IC is the same as cs LCM's IC--nt35592
+	if (zte_mdss_dsi_ctrl->panel_name 
+		&& (!strcmp(zte_mdss_dsi_ctrl->panel_name, "cs nt35592 720p video mode dsi panel")
+			|| !strcmp(zte_mdss_dsi_ctrl->panel_name, "lianchuang nt35592 720p video mode dsi panel"))) {
+		switch (value) {
+		case INTENSITY_NORMAL:
+			zte_send_cmd(sharp_nt35592_720p_default
+				, sizeof(sharp_nt35592_720p_default)/sizeof(sharp_nt35592_720p_default[0]));
+			break;
+		case INTENSITY_01:
+			zte_send_cmd(sharp_nt35592_720p_enhance1
+				, sizeof(sharp_nt35592_720p_enhance1)/sizeof(sharp_nt35592_720p_enhance1[0]));
+			break;
+		case INTENSITY_02:
+			zte_send_cmd(sharp_nt35592_720p_enhance2
+				, sizeof(sharp_nt35592_720p_enhance2)/sizeof(sharp_nt35592_720p_enhance2[0]));
+			break;
+		default:
+			zte_send_cmd(sharp_nt35592_720p_enhance1
+				, sizeof(sharp_nt35592_720p_enhance1)/sizeof(sharp_nt35592_720p_enhance1[0]));
+			break;
+		}
+	} else {
+#endif
+		switch (value) {
+		case INTENSITY_NORMAL:
+			zte_send_cmd(sharp_hx8392b_720p_default
+				, sizeof(sharp_hx8392b_720p_default)/sizeof(sharp_hx8392b_720p_default[0]));
+			break;
+		case INTENSITY_01:
+			zte_send_cmd(sharp_hx8392b_720p_enhance0
+			, sizeof(sharp_hx8392b_720p_enhance0)/sizeof(sharp_hx8392b_720p_enhance0[0]));
+			/*zte_send_cmd(sharp_hx8392b_720p_enhance1
+				, sizeof(sharp_hx8392b_720p_enhance1)/sizeof(sharp_hx8392b_720p_enhance1[0]));*/
+			break;
+		case INTENSITY_02:
+			zte_send_cmd(sharp_hx8392b_720p_enhance2
+				, sizeof(sharp_hx8392b_720p_enhance2)/sizeof(sharp_hx8392b_720p_enhance2[0]));
+			break;
+		default:
+			zte_send_cmd(sharp_hx8392b_720p_enhance0
+				, sizeof(sharp_hx8392b_720p_enhance0)/sizeof(sharp_hx8392b_720p_enhance0[0]));
+			break;
+		}
+#if defined(CONFIG_ZTEMT_MIPI_720P_NT35592_SHARP_IPS_5P)
+	}
+#endif
+}
+#endif
 
+void zte_send_cmd(struct dsi_cmd_desc *cmds, int len)
+{
+	struct dcs_cmd_req cmdreq;
+
+
+	if(!zte_mdss_dsi_ctrl)
+	{
+		pr_err("lcd:faild:%s zte_mdss_dsi_ctrl is null\n",__func__);
+		return;
+	}
+	
 	memset(&cmdreq, 0, sizeof(cmdreq));
 	cmdreq.cmds = cmds;
-	cmdreq.cmds_cnt = cmdcount;
+	cmdreq.cmds_cnt = len;
 	cmdreq.flags = CMD_REQ_COMMIT;
 	cmdreq.rlen = 0;
 	cmdreq.cb = NULL;
@@ -131,8 +163,9 @@ void zte_send_cmd(struct dsi_cmd_desc *cmds,int cmdcount)
 	mdss_dsi_cmdlist_put(zte_mdss_dsi_ctrl, &cmdreq);
 }
 
-void zte_mipi_saturation(void)
+void zte_mipi_disp_inc(unsigned int state)
 {
+<<<<<<< HEAD
 	unsigned int value;
 	value =zte_enhance_val.saturation;
 
@@ -179,17 +212,16 @@ static ssize_t saturation_store(struct kobject *kobj, struct kobj_attribute *att
 
 #if ZTE_DISP_ENHANCE_DEBUG
 	printk("lcd:%s state=%d size=%d\n", __func__, (int)val, (int)size);
+=======
+#if defined(CONFIG_ZTEMT_NE501_LCD)
+  zte_NE501J_disp_inc(state);
+>>>>>>> 995e15c... update drivers for nx404h and for x9180
 #endif
-
-	zte_enhance_val.saturation =val;
-
-	zte_mipi_saturation();
-	return size;
 }
 
-
-void zte_mipi_colortmp(void)
+void zte_disp_enhance(void)
 {
+<<<<<<< HEAD
 	unsigned int value;
 	value =zte_enhance_val.colortmp;
 
@@ -225,180 +257,72 @@ static ssize_t colortmp_show(struct kobject *kobj,
 	struct kobj_attribute *attr, char *buf)
 {	
 	return snprintf(buf, PAGE_SIZE, "%d\n",	zte_enhance_val.colortmp);
+=======
+  zte_mipi_disp_inc(zte_intensity_value);
+>>>>>>> 995e15c... update drivers for nx404h and for x9180
 }
+static ssize_t intensity_show(struct kobject *kobj, struct kobj_attribute *attr,
+   char *buf)
+{
+	snprintf(buf, 50, "%u\n", zte_intensity_value);
 
-static ssize_t colortmp_store(struct kobject *kobj, struct kobj_attribute *attr,
+	return 0;
+}
+static ssize_t intensity_store(struct kobject *kobj, struct kobj_attribute *attr,
     const char *buf, size_t size)
 {
+	ssize_t ret = 0;
 	int val;
-
-	if(!zte_enhance_val.en_colortmp)
-	     return size;
-
+	static bool is_firsttime = true;
 	sscanf(buf, "%d", &val);
 
-#if ZTE_DISP_ENHANCE_DEBUG
+#ifdef ZTE_DISP_ENHANCE_DEBUG
 	printk("lcd:%s state=%d size=%d\n", __func__, (int)val, (int)size);
 #endif
-
-	zte_enhance_val.colortmp = val;
-	
-	zte_mipi_colortmp();
-	return size;
-}
-
-#if ZTEMT_LCD_CORLORTMP_DEBUG
-
-static ssize_t colortmp_debug_show(struct kobject *kobj, 
-	struct kobj_attribute *attr, char *buf)
-{	
-	return snprintf(buf, PAGE_SIZE, "r = 0x%x, g = 0x%x, b = 0x%x\n",
-		zte_pcc_cfg_debug.r.r, zte_pcc_cfg_debug.g.g, zte_pcc_cfg_debug.b.b);
-}
-
-static ssize_t colortmp_debug_store(struct kobject *kobj, struct kobj_attribute *attr,
-    const char *buf, size_t size)
-{
-	int val;
-
-	if(!zte_enhance_val.en_colortmp)
-	     return size;
-
-	sscanf(buf, "%d", &val);
-
-#if ZTE_DISP_ENHANCE_DEBUG
-	printk("lcd:%s state=%d size=%d\n", __func__, (int)val, (int)size);
-#endif
-
-	if (val == 1) {
-		zte_mdss_pcc_config(&zte_pcc_cfg_debug);
+	zte_intensity_value = val;
+	if (is_firsttime) {
+		is_firsttime = false;
+		return ret;
 	}
+	zte_mipi_disp_inc(val);
 
-	return size;
+	return ret;
 }
 
-static ssize_t colortmp_r_store(struct kobject *kobj, struct kobj_attribute *attr,
-    const char *buf, size_t size)
-{
-	uint32_t val;
+static struct kobj_attribute disptype_attribute =
+ __ATTR(saturation, 0664, intensity_show, intensity_store);
 
-	sscanf(buf, "%x", &val);
-
-	zte_pcc_cfg_debug.r.r = val;
-	
-	return size;
-}
-
-static ssize_t colortmp_g_store(struct kobject *kobj, struct kobj_attribute *attr,
-    const char *buf, size_t size)
-{
-	uint32_t val;
-
-	sscanf(buf, "%x", &val);
-
-	zte_pcc_cfg_debug.g.g = val;
-	
-	return size;
-}
-
-static ssize_t colortmp_b_store(struct kobject *kobj, struct kobj_attribute *attr,
-    const char *buf, size_t size)
-{
-	uint32_t val;
-
-	sscanf(buf, "%x", &val);
-
-	zte_pcc_cfg_debug.b.b = val;
-	
-	return size;
-}
-
-#endif
-
-void zte_set_ctrl_point(struct mdss_dsi_ctrl_pdata * ctrl)
-{
-#if ZTE_DISP_ENHANCE_DEBUG
-	printk("lcd:%s \n", __func__);
-#endif
-
-	zte_mdss_dsi_ctrl = ctrl;
-}
-
-void zte_boot_begin_enhance(struct mdss_dsi_ctrl_pdata *ctrl)
-{
-#if ZTE_DISP_ENHANCE_DEBUG
-	printk("lcd:%s \n", __func__);
-#endif
-	zte_set_ctrl_point(ctrl);
-
-	zte_mipi_saturation();
-	zte_mipi_colortmp();
-}
-
-static struct kobj_attribute attrs[] = {
-	__ATTR(saturation, 0664, saturation_show, saturation_store),
-	__ATTR(colortmp, 0664, colortmp_show, colortmp_store),
-#if ZTEMT_LCD_CORLORTMP_DEBUG
-	__ATTR(colortmp_r, 0664, NULL, colortmp_r_store),
-	__ATTR(colortmp_g, 0664, NULL, colortmp_g_store),
-	__ATTR(colortmp_b, 0664, NULL, colortmp_b_store),
-	__ATTR(colortmp_debug, 0664, colortmp_debug_show, colortmp_debug_store),
-#endif
-};
-
-struct kobject *enhance__kobj;
-
-static int __init enhance_init(void)
-{
-	int retval;
-	int attr_count = 0;
-
-	enhance__kobj = kobject_create_and_add("lcd_enhance", kernel_kobj);
-
-	if (!enhance__kobj)
-		return -ENOMEM;
-
-	/* Create the files associated with this kobject */
-	for (attr_count = 0; attr_count < ARRAY_SIZE(attrs); attr_count++) {
-		
-		if(!zte_enhance_val.en_colortmp && (attr_count == 1))
-			continue;
-	
-		retval = sysfs_create_file(enhance__kobj, &attrs[attr_count].attr);
-		if (retval < 0) {
-			pr_err("%s: Failed to create sysfs attributes\n", __func__);
-			goto err_sys;
-		}
-	}
-	
-	pr_info("lcd: %s Done.\n",__func__);
-
-	return retval;
-	
-err_sys:
-	for (attr_count--; attr_count >= 0; attr_count--) {
-		sysfs_remove_file(enhance__kobj, &attrs[attr_count].attr);
-	}
-	
-	kobject_put(enhance__kobj);
-	
-	pr_info("lcd: %s init ERR.\n",__func__);
-
-	return retval;
-}
-
-static void __exit enhance_exit(void)
-{
-	int attr_count = 0;
-	
-	for (attr_count = 0; attr_count < ARRAY_SIZE(attrs); attr_count++) {
-		sysfs_remove_file(enhance__kobj, &attrs[attr_count].attr);
-	}
-	
-	kobject_put(enhance__kobj);
-	zte_mdss_dsi_ctrl = NULL;
-}
-
-module_init(enhance_init);
-module_exit(enhance_exit);
-
+ static struct attribute *attrs[] = {
+  &disptype_attribute.attr,
+  NULL, /* need to NULL terminate the list of attributes */
+ };
+ static struct attribute_group attr_group = {
+  .attrs = attrs,
+ };
+ 
+ static struct kobject *id_kobj;
+ 
+ static int __init id_init(void)
+ {
+  int retval;
+ 
+  id_kobj = kobject_create_and_add("lcd_enhance", kernel_kobj);
+  if (!id_kobj)
+   return -ENOMEM;
+ 
+  /* Create the files associated with this kobject */
+  retval = sysfs_create_group(id_kobj, &attr_group);
+  if (retval)
+   kobject_put(id_kobj);
+ 
+  return retval;
+ }
+ 
+ static void __exit id_exit(void)
+ {
+  kobject_put(id_kobj);
+ }
+ 
+ module_init(id_init);
+ module_exit(id_exit);
+ 

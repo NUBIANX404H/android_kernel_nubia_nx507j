@@ -74,7 +74,7 @@ config ZTEMT_MIPI_1080P_R63417_SHARP_IPS_5P5
     bool "MIPI 1080P R63417 SHARP 5.5"
     help
         This option enables support 5.5 inch LCD.
-	
+
 config ZTEMT_MIPI_1080P_R63311_SHARP_IPS_6P4
 	bool "MIPI 1080P R63311 SHARP IPS 6.4"
 	help
@@ -112,7 +112,16 @@ config ZTEMT_LCD_DISP_ENHANCE
 	bool "LCD disp color enhance"
 	depends on ZTEMT_LCD_MIPI_COMMON
 	default n
+config ZTEMT_MIPI_720P_R69431_SHARP_IPS_4P7
+	bool "MIPI 720P R69431 SHARP IPS 4P7"
+	depends on ZTEMT_LCD_MIPI_COMMON
+	default n
 	
+config ZTEMT_MIPI_720P_NT35592_SHARP_IPS_5P
+	bool "MIPI 720P NT35592 SHARP IPS 5P"
+	depends on ZTEMT_LCD_MIPI_COMMON
+	default n
+		
 config ZTEMT_LCD_DEBUG_EN
 	bool "LCD debug log enable"
 	depends on ZTEMT_LCD_MIPI_COMMON

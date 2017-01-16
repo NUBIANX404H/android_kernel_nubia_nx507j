@@ -59,6 +59,7 @@ config SOUND_OSS_CORE_PRECLAIM
 
 source "sound/oss/dmasound/Kconfig"
 
+<<<<<<< HEAD
 config ZTEMT_AUDIO_EXT_AMP
     bool "AUDIO MACRO for ZTEMT External amp"
     default n
@@ -75,6 +76,18 @@ config ZTEMT_AUDIO_MBHC_OPEN
     default n
     help
         AUDIO MACRO for ZTEMT Z7
+=======
+config ZTEMT_AUDIO_NX404H
+       bool "AUDIO MACRO for ZTEMT NX404H"
+       default n
+       help 
+              AUDIO MACRO for ZTEMT NX404H
+config ZTEMT_AUDIO
+       bool "AUDIO MACRO for ZTEMT"
+       default n
+       help 
+              AUDIO MACRO for ZTEMT
+>>>>>>> 995e15c... update drivers for nx404h and for x9180
 if !M68K && !UML
 
 menuconfig SND
