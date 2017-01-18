@@ -165,106 +165,20 @@ void zte_send_cmd(struct dsi_cmd_desc *cmds, int len)
 
 void zte_mipi_disp_inc(unsigned int state)
 {
-<<<<<<< HEAD
-	unsigned int value;
-	value =zte_enhance_val.saturation;
-
-	if(!zte_enhance_val.en_saturation || ((NULL == display_std_cmd.payload) || \
-		(NULL == display_soft_cmd.payload) ||(NULL == display_glow_cmd.payload)) ||\
-		(NULL == zte_mdss_dsi_ctrl))
-		return;
-
-#if ZTE_DISP_ENHANCE_DEBUG
-	printk("lcd:%s value=%d\n", __func__, value);
-#endif
-
-	switch (value) {
-	case INTENSITY_00:
-		zte_send_cmd(&display_soft_cmd,ZTE_SHARP_ENHANCE_CMD_COUNT);
-		break;
-	case INTENSITY_01:
-		zte_send_cmd(&display_std_cmd,ZTE_SHARP_ENHANCE_CMD_COUNT);
-		break;
-	case INTENSITY_02:
-		zte_send_cmd(&display_glow_cmd,ZTE_SHARP_ENHANCE_CMD_COUNT);
-		break;
-	default:
-		zte_send_cmd(&display_std_cmd,ZTE_SHARP_ENHANCE_CMD_COUNT);
-		break;
-	}
-}
-
-static ssize_t saturation_show(struct kobject *kobj, 
-	struct kobj_attribute *attr, char *buf)
-{	
-	return snprintf(buf, PAGE_SIZE, "%d\n",	zte_enhance_val.en_saturation);
-}
-
-static ssize_t saturation_store(struct kobject *kobj, struct kobj_attribute *attr,
-							const char *buf, size_t size)
-{
-	int val;
-
-	if(!zte_enhance_val.en_saturation)
-		return size;
-
-	sscanf(buf, "%d", &val);
-
-#if ZTE_DISP_ENHANCE_DEBUG
-	printk("lcd:%s state=%d size=%d\n", __func__, (int)val, (int)size);
-=======
 #if defined(CONFIG_ZTEMT_NE501_LCD)
   zte_NE501J_disp_inc(state);
->>>>>>> 995e15c... update drivers for nx404h and for x9180
 #endif
 }
 
 void zte_disp_enhance(void)
 {
-<<<<<<< HEAD
-	unsigned int value;
-	value =zte_enhance_val.colortmp;
-
-	if(!zte_enhance_val.en_colortmp || (NULL == zte_mdss_dsi_ctrl))
-		return ;
-	
-#if ZTE_DISP_ENHANCE_DEBUG
-	printk("lcd:%s value=%d\n", __func__, value);
-#endif
-
-	switch (value) {
-	case INTENSITY_00:
-		zte_mdss_pcc_config(&zte_pcc_cfg_warm);
-		break;
-	case INTENSITY_01:
-		zte_mdss_pcc_config(&zte_pcc_cfg_normal);
-		break;
-	case INTENSITY_02:
-		zte_mdss_pcc_config(&zte_pcc_cfg_cool);
-		break;
-	default:
-#if defined(CONFIG_ZTEMT_MIPI_2K_R63419_SHARP_IPS_5P5) || \
-	defined(CONFIG_ZTEMT_MIPI_1080P_R63311_SHARP_IPS_6P4)
-		zte_mdss_pcc_config(&zte_pcc_cfg_warm);
-#else
-		zte_mdss_pcc_config(&zte_pcc_cfg_normal);
-#endif
-		break;
-	}
-}
-
-static ssize_t colortmp_show(struct kobject *kobj, 
-	struct kobj_attribute *attr, char *buf)
-{	
-	return snprintf(buf, PAGE_SIZE, "%d\n",	zte_enhance_val.colortmp);
-=======
   zte_mipi_disp_inc(zte_intensity_value);
->>>>>>> 995e15c... update drivers for nx404h and for x9180
 }
+
 static ssize_t intensity_show(struct kobject *kobj, struct kobj_attribute *attr,
    char *buf)
 {
-	snprintf(buf, 50, "%u\n", zte_intensity_value);
+	//snprintf(buf, 50, "%u\n", zte_intensity_value);
 
 	return 0;
 }
@@ -290,7 +204,7 @@ static ssize_t intensity_store(struct kobject *kobj, struct kobj_attribute *attr
 }
 
 static struct kobj_attribute disptype_attribute =
- __ATTR(saturation, 0664, intensity_show, intensity_store);
+ __ATTR(disptype, 0664, intensity_show, intensity_store);
 
  static struct attribute *attrs[] = {
   &disptype_attribute.attr,
